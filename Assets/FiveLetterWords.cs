@@ -16,367 +16,223 @@ public class FiveLetterWords : MonoBehaviour
 
     public AudioClip[] SFX;
 
-    public KMSelectable[] Selectables;
+    public KMSelectable[] Buttons;
     public GameObject[] Disabler;
 
-    public TextMesh[] WordDex;
-    public TextAsset FiverData;
-    private bool Playable = false;
+    public TextMesh[] Displays;
+    public TextAsset WordBank;
 
-    private int[] TheValues = { 0, 0, 0 };
+    private int[] WordValues = { 0, 0, 0 };
 
     // Logging
     static int moduleIdCounter = 1;
     int moduleId;
-    private bool ModuleSolved;
 
     void Awake()
     {
         moduleId = moduleIdCounter++;
-        Selectables[0].OnInteract += delegate () { Number0(); return false; };
-        Selectables[1].OnInteract += delegate () { Number1(); return false; };
-        Selectables[2].OnInteract += delegate () { Number2(); return false; };
+        Buttons[0].OnInteract += delegate () { PressButton0(); return false; };
+        Buttons[1].OnInteract += delegate () { PressButton1(); return false; };
+        Buttons[2].OnInteract += delegate () { PressButton2(); return false; };
+        Module.OnActivate += GenerateAnswer;
     }
 
-    void Start()
+    void GenerateAnswer()
     {
-        Module.OnActivate += BombAnswer;
-    }
-
-    void BombAnswer()
-    {
-        Playable = true;
-        string[] TheAnswer = JsonConvert.DeserializeObject<string[]>(FiverData.text).Shuffle();
-        int Stent = 0;
+        string[] AllWords = JsonConvert.DeserializeObject<string[]>(WordBank.text).Shuffle();
+        string[] Ordinals = new string[] { "first", "second", "third" };
+        TryAgain:
+        WordValues[0] = 0; WordValues[1] = 0; WordValues[2] = 0;
         for (int i = 0; i < 3; i++)
         {
-            WordDex[Stent].text = TheAnswer[Stent];
-            int Gnomon = 0;
-            for (int a = 0; a < 5; a++)
+            Displays[i].text = AllWords[i];
+
+            for (int j = 0; j < 5; j++)
             {
                 if (Bomb.GetIndicators().Count() > 3 || Bomb.GetPortCount() > 3 || Bomb.GetBatteryCount() > 3 || Bomb.GetPortPlates().Count() > 3)
                 {
-                    if (TheAnswer[Stent][Gnomon].ToString() == "E" || TheAnswer[Stent][Gnomon].ToString() == "S" || TheAnswer[Stent][Gnomon].ToString() == "X")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 1;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "A" || TheAnswer[Stent][Gnomon].ToString() == "K" || TheAnswer[Stent][Gnomon].ToString() == "N")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 2;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "C" || TheAnswer[Stent][Gnomon].ToString() == "H" || TheAnswer[Stent][Gnomon].ToString() == "V" || TheAnswer[Stent][Gnomon].ToString() == "Z")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 3;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "T" || TheAnswer[Stent][Gnomon].ToString() == "Y")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 4;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "F" || TheAnswer[Stent][Gnomon].ToString() == "P" || TheAnswer[Stent][Gnomon].ToString() == "R" || TheAnswer[Stent][Gnomon].ToString() == "W")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 5;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "B" || TheAnswer[Stent][Gnomon].ToString() == "G" || TheAnswer[Stent][Gnomon].ToString() == "L")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 6;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "I")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 7;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "D" || TheAnswer[Stent][Gnomon].ToString() == "J" || TheAnswer[Stent][Gnomon].ToString() == "M")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 8;
-                    }
-
+                    if (i == 0 && j == 0)
+                        Debug.LogFormat("[Five Letter Words #{0}] Using the first table.", moduleId);
+                    if (AllWords[i][j].ToString() == "E" || AllWords[i][j].ToString() == "S" || AllWords[i][j].ToString() == "X")
+                        WordValues[i] = WordValues[i] + 1;
+                    else if (AllWords[i][j].ToString() == "A" || AllWords[i][j].ToString() == "K" || AllWords[i][j].ToString() == "N")
+                        WordValues[i] = WordValues[i] + 2;
+                    else if (AllWords[i][j].ToString() == "C" || AllWords[i][j].ToString() == "H" || AllWords[i][j].ToString() == "V" || AllWords[i][j].ToString() == "Z")
+                        WordValues[i] = WordValues[i] + 3;
+                    else if (AllWords[i][j].ToString() == "T" || AllWords[i][j].ToString() == "Y")
+                        WordValues[i] = WordValues[i] + 4;
+                    else if (AllWords[i][j].ToString() == "F" || AllWords[i][j].ToString() == "P" || AllWords[i][j].ToString() == "R" || AllWords[i][j].ToString() == "W")
+                        WordValues[i] = WordValues[i] + 5;
+                    else if (AllWords[i][j].ToString() == "B" || AllWords[i][j].ToString() == "G" || AllWords[i][j].ToString() == "L")
+                        WordValues[i] = WordValues[i] + 6;
+                    else if (AllWords[i][j].ToString() == "I")
+                        WordValues[i] = WordValues[i] + 7;
+                    else if (AllWords[i][j].ToString() == "D" || AllWords[i][j].ToString() == "J" || AllWords[i][j].ToString() == "M")
+                        WordValues[i] = WordValues[i] + 8;
                     else
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 9;
-                    }
-
+                        WordValues[i] = WordValues[i] + 9;
                 }
-
                 else
                 {
-                    if (TheAnswer[Stent][Gnomon].ToString() == "F" || TheAnswer[Stent][Gnomon].ToString() == "K" || TheAnswer[Stent][Gnomon].ToString() == "Y")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 1;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "N" || TheAnswer[Stent][Gnomon].ToString() == "W" || TheAnswer[Stent][Gnomon].ToString() == "X" || TheAnswer[Stent][Gnomon].ToString() == "Y")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 2;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "H" || TheAnswer[Stent][Gnomon].ToString() == "L" || TheAnswer[Stent][Gnomon].ToString() == "Q")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 3;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "A" || TheAnswer[Stent][Gnomon].ToString() == "C")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 4;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "G" || TheAnswer[Stent][Gnomon].ToString() == "S" || TheAnswer[Stent][Gnomon].ToString() == "U")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 5;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "D" || TheAnswer[Stent][Gnomon].ToString() == "I" || TheAnswer[Stent][Gnomon].ToString() == "V")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 6;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "J" || TheAnswer[Stent][Gnomon].ToString() == "M" || TheAnswer[Stent][Gnomon].ToString() == "O")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 7;
-                    }
-
-                    else if (TheAnswer[Stent][Gnomon].ToString() == "B" || TheAnswer[Stent][Gnomon].ToString() == "P" || TheAnswer[Stent][Gnomon].ToString() == "R")
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 8;
-                    }
-
+                    if (i == 0 && j == 0)
+                        Debug.LogFormat("[Five Letter Words #{0}] Using the second table.", moduleId);
+                    if (AllWords[i][j].ToString() == "F" || AllWords[i][j].ToString() == "K" || AllWords[i][j].ToString() == "Y")
+                        WordValues[i] = WordValues[i] + 1;
+                    else if (AllWords[i][j].ToString() == "N" || AllWords[i][j].ToString() == "W" || AllWords[i][j].ToString() == "X" || AllWords[i][j].ToString() == "Y")
+                        WordValues[i] = WordValues[i] + 2;
+                    else if (AllWords[i][j].ToString() == "H" || AllWords[i][j].ToString() == "L" || AllWords[i][j].ToString() == "Q")
+                        WordValues[i] = WordValues[i] + 3;
+                    else if (AllWords[i][j].ToString() == "A" || AllWords[i][j].ToString() == "C")
+                        WordValues[i] = WordValues[i] + 4;
+                    else if (AllWords[i][j].ToString() == "G" || AllWords[i][j].ToString() == "S" || AllWords[i][j].ToString() == "U")
+                        WordValues[i] = WordValues[i] + 5;
+                    else if (AllWords[i][j].ToString() == "D" || AllWords[i][j].ToString() == "I" || AllWords[i][j].ToString() == "V")
+                        WordValues[i] = WordValues[i] + 6;
+                    else if (AllWords[i][j].ToString() == "J" || AllWords[i][j].ToString() == "M" || AllWords[i][j].ToString() == "O")
+                        WordValues[i] = WordValues[i] + 7;
+                    else if (AllWords[i][j].ToString() == "B" || AllWords[i][j].ToString() == "P" || AllWords[i][j].ToString() == "R")
+                        WordValues[i] = WordValues[i] + 8;
                     else
-                    {
-                        TheValues[Stent] = TheValues[Stent] + 9;
-                    }
+                        WordValues[i] = WordValues[i] + 9;
                 }
-                Gnomon++;
             }
-            Stent++;
+            Debug.LogFormat("[Five Letter Words #{0}] The {1} display says {2}.", moduleId, Ordinals[i], Displays[i].text.ToLowerInvariant());
         }
-
-        if ((TheValues[0] == TheValues[1]) || (TheValues[0] == TheValues[2]) || (TheValues[1] == TheValues[2]))
-        {
-            TheValues[0] = 0; TheValues[1] = 0; TheValues[2] = 0;
-            BombAnswer();
-        }
-
+        if ((WordValues[0] == WordValues[1]) || (WordValues[0] == WordValues[2]) || (WordValues[1] == WordValues[2]))
+            goto TryAgain;
         else
         {
-            Debug.LogFormat("[Five Letter Words #{0}] The word scores are: {1}", moduleId, string.Join(", ", TheValues.Select(x => x.ToString()).ToArray()));
+            Debug.LogFormat("[Five Letter Words #{0}] The word scores are: {1}", moduleId, string.Join(", ", WordValues.Select(x => x.ToString()).ToArray()));
+            Debug.LogFormat("[Five Letter Words #{0}] You need to press {1} when the seconds part of the timer says {2}.", moduleId, Displays[Array.IndexOf(WordValues, WordValues.Max())].text.ToLowerInvariant(), WordValues.Min());
         }
     }
 
-    void Number0()
+    void PressButton0()
     {
         Audio.PlaySoundAtTransform(SFX[0].name, transform);
-        if ((TheValues[0] > TheValues[1]) && (TheValues[0] > TheValues[2]))
+        if ((WordValues[0] > WordValues[1]) && (WordValues[0] > WordValues[2]))
         {
-            if (TheValues[1] < TheValues[2])
+            if (WordValues[1] < WordValues[2])
             {
-                if (((int)Bomb.GetTime()) % 60 == TheValues[1])
-                {
+                if (((int)Bomb.GetTime()) % 60 == WordValues[1])
                     StartCoroutine(RouletteCheck());
-                }
-
                 else
-                {
                     StartCoroutine(RouletteWrong());
-                }
             }
-
-            else if (TheValues[2] < TheValues[1])
+            else if (WordValues[2] < WordValues[1])
             {
-                if (((int)Bomb.GetTime()) % 60 == TheValues[2])
-                {
+                if (((int)Bomb.GetTime()) % 60 == WordValues[2])
                     StartCoroutine(RouletteCheck());
-                }
-
                 else
-                {
                     StartCoroutine(RouletteWrong());
-                }
             }
         }
-
         else
-        {
             StartCoroutine(RouletteWrong());
-        }
     }
 
-    void Number1()
+    void PressButton1()
     {
         Audio.PlaySoundAtTransform(SFX[0].name, transform);
-        if ((TheValues[1] > TheValues[0]) && (TheValues[1] > TheValues[2]))
+        if ((WordValues[1] > WordValues[0]) && (WordValues[1] > WordValues[2]))
         {
-            if (TheValues[0] < TheValues[2])
+            if (WordValues[0] < WordValues[2])
             {
-                if (((int)Bomb.GetTime()) % 60 == TheValues[0])
-                {
+                if (((int)Bomb.GetTime()) % 60 == WordValues[0])
                     StartCoroutine(RouletteCheck());
-                }
-
                 else
-                {
                     StartCoroutine(RouletteWrong());
-                }
             }
-
-            else if (TheValues[2] < TheValues[0])
+            else if (WordValues[2] < WordValues[0])
             {
-                if (((int)Bomb.GetTime()) % 60 == TheValues[2])
-                {
+                if (((int)Bomb.GetTime()) % 60 == WordValues[2])
                     StartCoroutine(RouletteCheck());
-                }
-
                 else
-                {
                     StartCoroutine(RouletteWrong());
-                }
             }
         }
-
         else
-        {
             StartCoroutine(RouletteWrong());
-        }
     }
 
-    void Number2()
+    void PressButton2()
     {
         Audio.PlaySoundAtTransform(SFX[0].name, transform);
-        if ((TheValues[2] > TheValues[0]) && (TheValues[2] > TheValues[1]))
+        if ((WordValues[2] > WordValues[0]) && (WordValues[2] > WordValues[1]))
         {
-            if (TheValues[0] < TheValues[1])
+            if (WordValues[0] < WordValues[1])
             {
-                if (((int)Bomb.GetTime()) % 60 == TheValues[0])
-                {
+                if (((int)Bomb.GetTime()) % 60 == WordValues[0])
                     StartCoroutine(RouletteCheck());
-                }
-
                 else
-                {
                     StartCoroutine(RouletteWrong());
-                }
             }
-
-            else if (TheValues[1] < TheValues[0])
+            else if (WordValues[1] < WordValues[0])
             {
-                if (((int)Bomb.GetTime()) % 60 == TheValues[1])
-                {
+                if (((int)Bomb.GetTime()) % 60 == WordValues[1])
                     StartCoroutine(RouletteCheck());
-                }
-
                 else
-                {
                     StartCoroutine(RouletteWrong());
-                }
             }
         }
-
         else
-        {
             StartCoroutine(RouletteWrong());
-        }
     }
 
     IEnumerator RouletteCheck()
     {
-        int Hell = 0;
-        for (int q = 0; q < 3; q++)
+        foreach (GameObject i in Disabler)
+            i.SetActive(false);
+        string[] AllWords = JsonConvert.DeserializeObject<string[]>(WordBank.text).Shuffle();
+        for (int i = 0; i < 100; i++)
         {
-            Disabler[Hell].SetActive(false);
-            Hell++;
-        }
-
-        string[] TheAnswer = JsonConvert.DeserializeObject<string[]>(FiverData.text).Shuffle();
-        for (int d = 0; d < 100; d++)
-        {
-            int Coal = 0;
-            for (int f = 0; f < 3; f++)
-            {
-                int Celve = UnityEngine.Random.Range(0, TheAnswer.Length);
-                WordDex[Coal].text = TheAnswer[Celve];
-                Coal++;
-            }
+            for (int j = 0; j < 3; j++)
+                Displays[j].text = AllWords[UnityEngine.Random.Range(0, AllWords.Length)];
             yield return new WaitForSecondsRealtime(0.01f);
         }
-
-        int Chill = 0;
-        for (int m = 0; m < 3; m++)
+        for (int i = 0; i < 3; i++)
         {
-            WordDex[Chill].text = "YES!";
-            WordDex[Chill].color = Color.green;
-            Chill++;
+            Displays[i].text = "YES!";
+            Displays[i].color = Color.green;
         }
         Module.HandlePass();
+        Debug.LogFormat("[Five Letter Words #{0}] Module solved!", moduleId);
         Audio.PlaySoundAtTransform(SFX[2].name, transform);
     }
 
     IEnumerator RouletteWrong()
     {
-        int Hell = 0;
-        for (int q = 0; q < 3; q++)
+        for (int i = 0; i < 3; i++)
+            Disabler[i].SetActive(false);
+        string[] AllWords = JsonConvert.DeserializeObject<string[]>(WordBank.text).Shuffle();
+        for (int i = 0; i < 100; i++)
         {
-            Disabler[Hell].SetActive(false);
-            Hell++;
-        }
-
-        string[] TheAnswer = JsonConvert.DeserializeObject<string[]>(FiverData.text).Shuffle();
-        for (int d = 0; d < 100; d++)
-        {
-            int Coal = 0;
-            for (int f = 0; f < 3; f++)
-            {
-                int Celve = UnityEngine.Random.Range(0, TheAnswer.Length);
-                WordDex[Coal].text = TheAnswer[Celve];
-                Coal++;
-            }
+            for (int j = 0; j < 3; j++)
+                Displays[j].text = AllWords[UnityEngine.Random.Range(0, AllWords.Length)];
             yield return new WaitForSecondsRealtime(0.01f);
         }
-
-        int Chill = 0;
-        for (int m = 0; m < 3; m++)
+        for (int i = 0; i < 3; i++)
         {
-            WordDex[Chill].text = "NO!";
-            WordDex[Chill].color = Color.red;
-            Chill++;
+            Displays[i].text = "NO!";
+            Displays[i].color = Color.red;
         }
-
         Audio.PlaySoundAtTransform(SFX[1].name, transform);
         yield return new WaitForSecondsRealtime(0.5f);
-
         Module.HandleStrike();
-
-        int Chili = 0;
-        for (int m = 0; m < 3; m++)
+        Debug.LogFormat("[Five Letter Words #{0}] Strike! Resetting...", moduleId);
+        foreach (TextMesh Display in Displays)
+            Display.color= Color.white;
+        string[] TheAnswerGenerates = JsonConvert.DeserializeObject<string[]>(WordBank.text).Shuffle();
+        for (int i = 0; i < 50; i++)
         {
-            WordDex[Chili].color = Color.white;
-            Chili++;
-        }
-
-        string[] TheAnswerGenerates = JsonConvert.DeserializeObject<string[]>(FiverData.text).Shuffle();
-        for (int d = 0; d < 50; d++)
-        {
-            int Cola = 0;
-            for (int f = 0; f < 3; f++)
-            {
-                int Celvo = UnityEngine.Random.Range(0, TheAnswerGenerates.Length);
-                WordDex[Cola].text = TheAnswerGenerates[Celvo];
-                Cola++;
-            }
+            for (int j = 0; j < 3; j++)
+                Displays[j].text = TheAnswerGenerates[UnityEngine.Random.Range(0, TheAnswerGenerates.Length)];
             yield return new WaitForSecondsRealtime(0.01f);
         }
-
-        int Heaven = 0;
-        for (int q = 0; q < 3; q++)
-        {
-            Disabler[Heaven].SetActive(true);
-            Heaven++;
-        }
-
-        TheValues[0] = 0; TheValues[1] = 0; TheValues[2] = 0;
-        BombAnswer();
+        for (int i = 0; i < 3; i++)
+            Disabler[i].SetActive(true);
+        for (int i = 0; i < 3; i++)
+            WordValues[i] = 0;
+        GenerateAnswer();
     }
 }
