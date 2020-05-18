@@ -366,6 +366,8 @@ public class FiveLetterWords : MonoBehaviour
         while ((((int)Bomb.GetTime()) % 60) != Array.IndexOf(numbers, cmd[2]))
             yield return "trycancel The command to perform the action was cancelled due to a cancel request.";
         yield return null;
+        yield return "solve";
+        yield return "strike";
         Selectables[Array.IndexOf(positions, cmd[1])].OnInteract();
     }
 
